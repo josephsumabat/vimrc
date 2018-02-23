@@ -1,25 +1,22 @@
 call plug#begin('~/.vim/plugged')
 Plug 'itchyny/lightline.vim'
 Plug 'mgee/lightline-bufferline'
-Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
 Plug 'Shougo/neocomplete.vim'
 Plug 'majutsushi/tagbar'
 Plug 'hushicai/tagbar-javascript.vim'
 Plug 'mhinz/vim-signify'
 Plug 'w0rp/ale'
+Plug 'ludovicchabant/vim-gutentags'
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
 " Plug 'xolox/vim-misc'
 " Plug 'xolox/vim-easytags'
 call plug#end()
-
-" NERDtree autostart
-autocmd VimEnter * NERDTree
 
 " Neocomplete autostart
 let g:neocomplete#enable_at_startup = 1
 " <TAB>: completion.
 inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
-
-autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
 let g:tagbar_autoclose = 0
 
@@ -27,12 +24,13 @@ let g:ale_fixers = {
   \ 'javascript': ['eslint']
   \ }
 
-let g:easytags_languages = {
-\   'javascript': {
-\       'cmd': 'es-ctags',
-\       'recurse_flag': ''
-\   }
-\}
+"let g:easytags_languages = {
+"\   'javascript': {
+"\       'cmd': 'es-ctags',
+"\       'recurse_flag': ''
+"\   }
+"\}
+
 "" Config for signify
 let g:signify_vcs_list = ['git']
 let g:signify_sign_delete_first_line = '_'
@@ -99,6 +97,7 @@ syntax on
 set wildmode=longest,list,full
 set wildmenu
 set ignorecase
+set smartcase
 
 set number
 set relativenumber
@@ -125,9 +124,22 @@ map <C-k> <C-W>k
 map <C-h> <C-W>h
 map <C-l> <C-W>l
 "au filetype cc nnoremap <
+"
+command! -bang -nargs=* GGrep
+  \ call fzf#vim#grep('git grep --line-number '.shellescape(<q-args>), 0, <bang>0)
 
+command! -bang -nargs=* Rg
+  \ call fzf#vim#grep(
+  \   'rg  --line-number --no-heading --color=never '.shellescape(<q-args>), 0,
+  \   <bang>0 ? fzf#vim#with_preview('up:60%')
+  \           : fzf#vim#with_preview('right:50%:hidden', '?'),
+  \   <bang>0)
 let mapleader = " "
+
 nnoremap <leader><tab> :bnext<CR>
+nnoremap <leader>s :FZF<CR>
+nnoremap <leader>f :Rg<CR>
+nnoremap <leader>x :bdelete<CR>
 
 "syntax based folding
 "set foldmethod=syntax
