@@ -1,5 +1,6 @@
 call plug#begin('~/.vim/plugged')
 "Plug 'altercation/vim-colors-solarized' 
+Plug 'tpope/vim-fugitive'
 Plug 'Yggdroot/indentLine'
 Plug 'mxw/vim-jsx'
 Plug 'pangloss/vim-javascript'
