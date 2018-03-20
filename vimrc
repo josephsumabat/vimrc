@@ -1,4 +1,8 @@
 call plug#begin('~/.vim/plugged')
+"Plug 'altercation/vim-colors-solarized' 
+Plug 'Yggdroot/indentLine'
+Plug 'mxw/vim-jsx'
+Plug 'pangloss/vim-javascript'
 Plug 'itchyny/lightline.vim'
 Plug 'mgee/lightline-bufferline'
 Plug 'Shougo/neocomplete.vim'
@@ -27,6 +31,7 @@ let g:ale_fixers = {
 "let g:easytags_languages = {
 "\   'javascript': {
 "\       'cmd': 'es-ctags',
+"
 "\       'recurse_flag': ''
 "\   }
 "\}
@@ -38,6 +43,15 @@ let g:signify_sign_change = '~'
 let g:signify_sign_changedelete = '~_'
 let g:signify_sign_show_count = 0
 
+
+
+ "solarized theme
+syntax enable
+let g:solarized_termtrans=1
+let g:solarized_termcolors=16
+set background=dark
+colorscheme solarized
+
  "" Highlighting for GitGutter symbols
  highlight SignifySignAdd ctermbg=none ctermfg=64
  highlight SignifySignChange ctermbg=none ctermfg=136
@@ -45,7 +59,6 @@ let g:signify_sign_show_count = 0
 
  "Make gutter clear
  highlight clear SignColumn
-
 
 let g:lightline = {
       \ 'colorscheme': 'solarized',
@@ -92,8 +105,6 @@ let g:lightline = {
 set relativenumber
 set number
 
-syntax on
-
 set wildmode=longest,list,full
 set wildmenu
 set ignorecase
@@ -118,6 +129,9 @@ hi clear CursorLine
 hi CursorLine cterm=underline
 set showtabline=2
 
+command W w
+command Wq wq
+
 " moving between windows
 map <C-j> <C-W>j
 map <C-k> <C-W>k
@@ -136,7 +150,7 @@ command! -bang -nargs=* Rg
   \   <bang>0)
 let mapleader = " "
 
-nnoremap <leader><tab> :bnext<CR>
+nnoremap <leader><tab> :Buffer<CR>
 nnoremap <leader>s :FZF<CR>
 nnoremap <leader>f :Rg<CR>
 nnoremap <leader>x :bdelete<CR>
