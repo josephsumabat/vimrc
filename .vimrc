@@ -12,30 +12,32 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 
 "Colorscheme
-Plug 'altercation/vim-colors-solarized' 
+Plug 'romainl/flattened'
 
-"git, aesthetics, marks shown on in gutter
-Plug 'tpope/vim-fugitive'
+"indent lines
 Plug 'Yggdroot/indentLine'
-Plug 'itchyny/lightline.vim'
-Plug 'mgee/lightline-bufferline'
+
+"git
+Plug 'tpope/vim-fugitive'
+
+
+"git diff in gutter
 Plug 'mhinz/vim-signify'
+"marks in gutter
 Plug 'kshenoy/vim-signature'
 
 "Language server
-Plug 'prabirshrestha/asyncomplete.vim'
 Plug 'prabirshrestha/async.vim'
 Plug 'prabirshrestha/vim-lsp'
-Plug 'prabirshrestha/asyncomplete-lsp.vim'
-Plug 'ryanolsonx/vim-lsp-javascript'
-Plug 'ryanolsonx/vim-lsp-typescript'
 
-"javascript/typescript development
-Plug 'leafgarland/typescript-vim'
-Plug 'pangloss/vim-javascript'
+Plug 'neovimhaskell/haskell-vim'
 
-"Markdown
-Plug 'JamshedVesuna/vim-markdown-preview'
+"Markdown and latex
+Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() } }
+Plug 'lervag/vimtex'
+
+"Vimwiki"
+Plug 'vimwiki/vimwiki'
 call plug#end()
 
 "lsp configuration
@@ -57,11 +59,12 @@ let g:signify_sign_changedelete = '~_'
 let g:signify_sign_show_count = 0
 
 "solarized theme
-syntax enable
-let g:solarized_termtrans=1
-let g:solarized_termcolors=16
-set background=dark
-colorscheme solarized
+colorscheme flattened_dark
+"ctermbg=none
+
+syntax on
+filetype plugin indent on
+let g:haskell_classic_highlighting=1
 
 "Highlighting for GitGutter symbols
 highlight SignifySignAdd ctermbg=none ctermfg=64
@@ -71,47 +74,7 @@ highlight SignifySignDelete ctermbg=none ctermfg=160
  "Make gutter clear
  highlight clear SignColumn
 
-let g:lightline = {
-      \ 'colorscheme': 'solarized',
-      \ 'active': {
-      \   'left': [
-      \     [ 'mode', 'paste' ],
-      \     [ 'readonly', 'filename' ],
-      \     [ 'gitbranch', 'gitinfo' ],
-      \   ],
-      \   'right': [
-      \     [ 'warnings' ],
-      \     [ 'lineinfo' ],
-      \     [ 'fileformat', 'fileencoding', 'filetype' ],
-      \   ],
-      \ },
-      \ 'tabline': {
-      \   'left': [ [ 'tabs', 'buffers' ] ],
-      \   'right': [ [ 'close' ] ],
-      \ },
-      \ 'tab': {
-      \   'active': [ 'tabnum' ],
-      \   'inactive': [ 'tabnum' ],
-      \ },
-      \ 'enable': {
-      \   'statusline': 1,
-      \   'tabline': 1,
-      \ },
-      \ 'component_expand': {
-      \   'buffers': 'lightline#bufferline#buffers',
-      \ },
-      \ 'component_type': {
-      \   'buffers': 'tabsel',
-      \ },
-      \ 'component': {
-      \   'lineinfo': '%l/%L:%3v',
-      \ },
-      \ 'component_function': {
-      \   'gitbranch': 'fugitive#head',
-      \   'gitinfo': 'LightLineGitInfo',
-      \   'warnings': 'LightLineWarnings',
-      \ },
-      \ }
+let g:tex_conceal = ""
 
 set relativenumber
 set number
@@ -127,13 +90,15 @@ set ruler
 set showcmd
 
 set autoindent
-set tabstop=2
+set tabstop=4
 set shiftwidth=2
 set expandtab
 set smarttab
 set laststatus=2
 
 set scrolloff=7
+
+set conceallevel=0
 
 set cursorline
 hi clear CursorLine
@@ -171,15 +136,53 @@ nnoremap <leader>x :bdelete<CR>
 inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
 
 "Javascript/typescript specific
-autocmd FileType javascript,typescript nnoremap <buffer> <C-]> :LspDefinition<CR>
-autocmd FileType javascript,typescript nnoremap <buffer> <C-^> :LspReferences<CR>
-autocmd FileType javascript,typescript nnoremap <buffer> <C-g> :LspHover<CR>
+autocmd FileType haskell nnoremap <buffer> <C-]> :LspDefinition<CR>
+autocmd FileType haskell nnoremap <buffer> <C-^> :LspReferences<CR>
+autocmd FileType haskell nnoremap <buffer> <C-g> :LspHover<CR>
+autocmd FileType haskell nnoremap <buffer> K :LspHover<CR>
 
 "javascript linting on :make
 autocmd FileType javascript setlocal errorformat=%f:\ line\ %l\\,\ col\ %c\\,\ %m
 autocmd FileType javascript setlocal makeprg=eslint\ %\ -f\ compact\ --quiet
+
 "typescript linting on :make
 autocmd FileType typescript setlocal errorformat=ERROR:\ %f:%l:%c\ -\ %m
 autocmd FileType typescript setlocal makeprg=tslint\ --quiet\ %\
 
 autocmd QuickFixCmdPost [^l]* cwindow
+
+au User lsp_setup call lsp#register_server({
+    \ 'name': 'ghcide',
+    \ 'cmd': {server_info->['ghcide', '--lsp']},
+    \ 'whitelist': ['haskell'],
+    \ })
+
+filetype plugin on
+set omnifunc=syntaxcomplete#Complete
+
+
+let g:vimtex_view_general_viewer = 'zathura'
+
+function! GitBranch()
+  return system("git rev-parse --abbrev-ref HEAD 2>/dev/null | tr -d '\n'")
+endfunction
+
+function! StatuslineGit()
+  let l:branchname = GitBranch()
+  return strlen(l:branchname) > 0?'  '.l:branchname.' ':''
+endfunction
+
+set statusline=
+set statusline+=%#PmenuSel#
+set statusline+=%{StatuslineGit()}
+set statusline+=%#LineNr#
+set statusline+=\ %f
+set statusline+=%m\
+set statusline+=%=
+set statusline+=%#CursorColumn#
+set statusline+=\ %y
+set statusline+=\ %{&fileencoding?&fileencoding:&encoding}
+set statusline+=\[%{&fileformat}\]
+set statusline+=\ %p%%
+set statusline+=\ %l:%c
+set statusline+=\ 
